@@ -5,8 +5,9 @@
   "type": "commonjs",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "bot": "node bot.js",
+    "postinstall": "prisma generate",
+    "start": "prisma generate && prisma db push --skip-generate --accept-data-loss && node src/server.js",
+    "bot": "prisma generate && node bot.js",
     "dev": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
@@ -14,14 +15,12 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "session-file-store": "^1.5.0",
     "grammy": "^1.30.0"
-  },
-  "devDependencies": {
-    "prisma": "^5.22.0"
   }
 }
