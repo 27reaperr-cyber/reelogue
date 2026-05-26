@@ -1,0 +1,29 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container">
+    <h1 style="font-size:26px">Мои списки</h1>
+
+    <div class="card" style="margin-bottom:18px">
+      <form method="post" action="/lists">
+        <label>Новый список</label>
+        <input class="field" name="name" placeholder="Название списка" required/>
+        <textarea class="field" name="description" rows="2" placeholder="Описание (необязательно)" style="margin-top:8px"></textarea>
+        <label style="margin:12px 0 0;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" name="isPublic" checked/> публичный список</label>
+        <div style="margin-top:12px"><button class="btn btn-sm">Создать</button></div>
+      </form>
+    </div>
+
+    <% if (!lists.length) { %><p class="muted">У вас пока нет списков.</p><% } %>
+    <% lists.forEach(function(l){ %>
+      <a href="/list/<%= l.id %>" class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-family:Georgia;font-size:20px"><%= l.name %></div>
+          <div class="muted"><%= l._count.items %> фильм(ов) <% if(!l.isPublic){ %>· <span class="tag">приватный</span><% } %></div>
+        </div>
+        <span class="gold">→</span>
+      </a>
+    <% }) %>
+  </div>
+</main>
+<%- include('partials/footer') %>

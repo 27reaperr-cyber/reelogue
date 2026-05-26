@@ -1,0 +1,136 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<%
+  var year = tmdb.yearOf(d);
+  var genres = (d.genres||[]).map(function(g){return g.name}).join(', ');
+  var country = (d.production_countries&&d.production_countries[0])?d.production_countries[0].name:'';
+%>
+<main class="film-hero">
+  <% if (d.backdrop_path) { %>
+    <div class="film-backdrop"><img src="<%= tmdb.backdrop(d.backdrop_path) %>" alt=""/></div>
+  <% } %>
+  <div class="container">
+    <% if (query.fav === 'full') { %><div class="flash">В избранном уже 4 фильма — освободите слот, чтобы добавить новый.</div><% } %>
+    <div class="film-top">
+      <div>
+        <% if (d.poster_path) { %>
+          <img class="film-poster" src="<%= tmdb.posterLg(d.poster_path) %>" alt="<%= d.title %>"/>
+        <% } else { %>
+          <div class="film-poster poster"><span class="ph"><%= d.title %></span></div>
+        <% } %>
+      </div>
+      <div style="flex:1;min-width:0">
+        <h1 class="film-title"><%= d.title %> <% if(year){ %><span class="film-year"><%= year %></span><% } %></h1>
+        <% if (d.original_title && d.original_title !== d.title) { %><div class="muted" style="font-style:italic"><%= d.original_title %></div><% } %>
+        <div class="film-meta">
+          <% if (genres) { %><%= genres %><% } %>
+          <% if (country) { %> · <%= country %><% } %>
+          <% if (d.runtime) { %> · <%= d.runtime %> мин<% } %>
+        </div>
+        <div style="margin:10px 0">
+          <% if (d.vote_average) { %><span class="rating-pill">TMDB <b><%= d.vote_average.toFixed(1) %></b></span><% } %>
+          <% if (avgUser) { %><span class="rating-pill">Reelogue <b><%= avgUser %></b> <span class="muted">· <%= ratingCount %></span></span><% } %>
+        </div>
+        <a class="btn" href="<%= watchUrl %>" target="_blank" rel="noopener">Смотреть</a>
+      </div>
+    </div>
+
+    <% if (d.overview) { %><p style="max-width:720px"><%= d.overview %></p><% } %>
+
+    <% if (currentUser) { %>
+      <div class="card" style="margin:18px 0">
+        <!-- rating -->
+        <label>Ваша оценка <% if (mine.rating) { %><span class="gold"><%= mine.rating %>/10</span><% } %></label>
+        <form method="post" action="/film/<%= film.tmdbId %>/rate" style="display:flex;flex-wrap:wrap;gap:6px">
+          <% for (let n=1;n<=10;n++){ %>
+            <button name="value" value="<%= n %>" class="btn btn-sm <%= mine.rating===n?'':'btn-ghost' %>" style="min-width:38px;padding:6px 0"><%= n %></button>
+          <% } %>
+          <% if (mine.rating) { %><button name="value" value="0" class="btn btn-ghost btn-sm">Сбросить</button><% } %>
+        </form>
+
+        <!-- status -->
+        <label>Списки</label>
+        <div class="actions">
+          <% var st=mine.status; %>
+          <form method="post" action="/film/<%= film.tmdbId %>/status"><button name="status" value="WATCHING" class="btn btn-ghost btn-sm <%= st==='WATCHING'?'on':'' %>">Смотрю</button></form>
+          <form method="post" action="/film/<%= film.tmdbId %>/status"><button name="status" value="WATCHED" class="btn btn-ghost btn-sm <%= st==='WATCHED'?'on':'' %>">Просмотрено</button></form>
+          <form method="post" action="/film/<%= film.tmdbId %>/status"><button name="status" value="WATCHLIST" class="btn btn-ghost btn-sm <%= st==='WATCHLIST'?'on':'' %>">Хочу посмотреть</button></form>
+          <form method="post" action="/film/<%= film.tmdbId %>/favorite"><button class="btn btn-ghost btn-sm">★ В избранное</button></form>
+        </div>
+
+        <!-- diary -->
+        <label>Отметить просмотр</label>
+        <form method="post" action="/film/<%= film.tmdbId %>/diary" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input class="field" type="date" name="watchedAt" value="<%= new Date().toISOString().slice(0,10) %>" style="width:auto"/>
+          <label style="margin:0;text-transform:none;letter-spacing:0;color:var(--text)"><input type="checkbox" name="rewatch"/> пересмотр</label>
+          <button class="btn btn-sm">Добавить в дневник</button>
+        </form>
+
+        <% if (myLists && myLists.length) { %>
+          <label>Добавить в список</label>
+          <form method="post" action="/film/<%= film.tmdbId %>/add-to-list" style="display:flex;gap:8px">
+            <select class="field" name="listId" style="width:auto">
+              <% myLists.forEach(function(l){ %><option value="<%= l.id %>"><%= l.name %></option><% }) %>
+            </select>
+            <button class="btn btn-sm">Добавить</button>
+          </form>
+        <% } %>
+      </div>
+    <% } %>
+
+    <% if (trailer) { %>
+      <h2 class="section-title">Трейлер</h2>
+      <div class="trailer"><iframe src="https://www.youtube.com/embed/<%= trailer %>" title="Трейлер" frameborder="0" allowfullscreen></iframe></div>
+    <% } %>
+
+    <!-- review form -->
+    <% if (currentUser) { %>
+      <h2 class="section-title"><%= mine.review ? 'Ваша рецензия' : 'Написать рецензию' %></h2>
+      <form method="post" action="/film/<%= film.tmdbId %>/review">
+        <textarea class="field" name="body" rows="4" placeholder="Что вы думаете об этом фильме?"><%= mine.review ? mine.review.body : '' %></textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <select class="field" name="rating" style="width:auto">
+            <option value="">Без оценки</option>
+            <% for(let n=10;n>=1;n--){ %><option value="<%= n %>" <%= (mine.review&&mine.review.rating===n)?'selected':'' %>><%= n %>/10</option><% } %>
+          </select>
+          <button class="btn btn-sm"><%= mine.review ? 'Обновить' : 'Опубликовать' %></button>
+        </div>
+      </form>
+    <% } %>
+
+    <!-- reviews -->
+    <h2 class="section-title">Рецензии <span class="muted"><%= reviews.length %></span></h2>
+    <% if (!reviews.length) { %><p class="muted">Пока нет рецензий.</p><% } %>
+    <% reviews.forEach(function(r){ %>
+      <div class="review" id="review-<%= r.id %>">
+        <div class="review-head">
+          <% if (r.user.avatarUrl) { %><img class="review-ava" src="<%= r.user.avatarUrl %>"/><% } %>
+          <a href="/u/<%= r.user.username %>" class="gold"><%= r.user.displayName %></a>
+          <% if (r.rating) { %><span class="muted">· <%= r.rating %>/10</span><% } %>
+        </div>
+        <div class="review-body"><%= r.body %></div>
+
+        <% r.comments.forEach(function(c){ %>
+          <div class="comment">
+            <a href="/u/<%= c.user.username %>" class="gold" style="font-size:14px"><%= c.user.displayName %></a>
+            <div style="font-size:15px"><%= c.body %></div>
+            <% if (currentUser) { %>
+              <% var liked = c.likes.some(function(l){return l.userId===currentUser.id}); %>
+              <form method="post" action="/comment/<%= c.id %>/like" style="display:inline">
+                <button class="like-btn <%= liked?'on':'' %>">♥ <%= c.likes.length %></button>
+              </form>
+            <% } else { %><span class="muted" style="font-size:14px">♥ <%= c.likes.length %></span><% } %>
+          </div>
+        <% }) %>
+
+        <% if (currentUser) { %>
+          <form method="post" action="/review/<%= r.id %>/comment" style="display:flex;gap:8px;margin:8px 0 0 16px">
+            <input class="field" name="body" placeholder="Комментарий…" style="font-size:15px"/>
+            <button class="btn btn-ghost btn-sm">Отправить</button>
+          </form>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</main>
+<%- include('partials/footer') %>

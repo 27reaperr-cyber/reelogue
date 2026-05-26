@@ -1,0 +1,183 @@
+// Reelogue — Prisma schema (SQLite)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./reelogue.db"
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  telegramId  String   @unique
+  username    String   @unique
+  displayName String
+  bio         String   @default("")
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+
+  authTokens   AuthToken[]
+  ratings      Rating[]
+  diary        DiaryEntry[]
+  statuses     FilmStatus[]
+  reviews      Review[]
+  comments     Comment[]
+  commentLikes CommentLike[]
+  lists        CustomList[]
+  favorites    FavoriteFilm[]
+
+  following Follow[] @relation("Following")
+  followers Follow[] @relation("Followers")
+}
+
+/// One-time tokens for the Telegram auth flow.
+/// kind = "START"  -> created by the site, passed to the bot via /start auth_<token>
+/// kind = "LOGIN"  -> created by the bot, used on /auth/callback?token=<token>
+model AuthToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  kind      String // "START" | "LOGIN"
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+/// Lightweight cache of TMDB films we reference locally.
+model Film {
+  tmdbId      Int      @id
+  title       String
+  originalTitle String?
+  year        Int?
+  posterPath  String?
+  backdropPath String?
+  overview    String   @default("")
+  genres      String   @default("") // comma separated names
+  country     String?
+  runtime     Int? // minutes
+  tmdbRating  Float?
+  kinopoiskId String?
+  updatedAt   DateTime @updatedAt
+
+  ratings   Rating[]
+  diary     DiaryEntry[]
+  statuses  FilmStatus[]
+  reviews   Review[]
+  favorites FavoriteFilm[]
+  listItems CustomListItem[]
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filmId    Int
+  film      Film     @relation(fields: [filmId], references: [tmdbId], onDelete: Cascade)
+  value     Int // 1..10
+  createdAt DateTime @default(now())
+
+  @@unique([userId, filmId])
+}
+
+model DiaryEntry {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filmId    Int
+  film      Film     @relation(fields: [filmId], references: [tmdbId], onDelete: Cascade)
+  watchedAt DateTime
+  rating    Int? // 1..10 snapshot
+  rewatch   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model FilmStatus {
+  id     Int    @id @default(autoincrement())
+  userId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filmId Int
+  film   Film   @relation(fields: [filmId], references: [tmdbId], onDelete: Cascade)
+  status String // "WATCHING" | "WATCHED" | "WATCHLIST"
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, filmId])
+}
+
+model Review {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filmId    Int
+  film      Film      @relation(fields: [filmId], references: [tmdbId], onDelete: Cascade)
+  body      String
+  rating    Int?
+  createdAt DateTime  @default(now())
+  comments  Comment[]
+}
+
+model Comment {
+  id        Int           @id @default(autoincrement())
+  reviewId  Int
+  review    Review        @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime      @default(now())
+  likes     CommentLike[]
+}
+
+model CommentLike {
+  id        Int     @id @default(autoincrement())
+  commentId Int
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+}
+
+model CustomList {
+  id          Int              @id @default(autoincrement())
+  userId      Int
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String           @default("")
+  isPublic    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  items       CustomListItem[]
+}
+
+model CustomListItem {
+  id     Int        @id @default(autoincrement())
+  listId Int
+  list   CustomList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  filmId Int
+  film   Film       @relation(fields: [filmId], references: [tmdbId], onDelete: Cascade)
+  order  Int        @default(0)
+
+  @@unique([listId, filmId])
+}
+
+model FavoriteFilm {
+  id       Int  @id @default(autoincrement())
+  userId   Int
+  user     User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filmId   Int
+  film     Film @relation(fields: [filmId], references: [tmdbId], onDelete: Cascade)
+  position Int // 1..4
+
+  @@unique([userId, position])
+  @@unique([userId, filmId])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId Int
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}

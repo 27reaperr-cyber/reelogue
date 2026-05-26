@@ -1,0 +1,30 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container">
+    <h1 style="font-size:28px;margin-bottom:2px"><%= list.name %> <% if(!list.isPublic){ %><span class="tag">приватный</span><% } %></h1>
+    <div class="muted">Список <a href="/u/<%= list.user.username %>"><%= list.user.displayName %></a> · <%= list.items.length %> фильм(ов)</div>
+    <% if (list.description) { %><p style="max-width:640px"><%= list.description %></p><% } %>
+
+    <% if (isOwner) { %>
+      <form method="post" action="/list/<%= list.id %>/delete" onsubmit="return confirm('Удалить список?')" style="margin:8px 0">
+        <button class="btn btn-ghost btn-sm">Удалить список</button>
+      </form>
+    <% } %>
+
+    <% if (!list.items.length) { %><p class="muted">Список пуст. Добавляйте фильмы кнопкой «Добавить в список» на странице фильма.</p><% } %>
+    <div class="grid" style="margin-top:14px">
+      <% list.items.forEach(function(it){ %>
+        <div>
+          <%- include('partials/filmcard', { card: { id: it.filmId, title: it.film.title, poster: tmdb.poster(it.film.posterPath), year: it.film.year, rating: null }, showTitle: false }) %>
+          <% if (isOwner) { %>
+            <form method="post" action="/list/<%= list.id %>/remove/<%= it.filmId %>" style="margin-top:4px">
+              <button class="like-btn" style="font-size:13px">убрать</button>
+            </form>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

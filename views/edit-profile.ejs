@@ -1,0 +1,19 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container" style="max-width:560px">
+    <h1 style="font-size:26px">Настройки профиля</h1>
+    <form method="post" action="/settings" class="card">
+      <label>Имя пользователя</label>
+      <input class="field" value="@<%= currentUser.username %>" disabled/>
+      <label>Отображаемое имя</label>
+      <input class="field" name="displayName" value="<%= currentUser.displayName %>" maxlength="60"/>
+      <label>О себе</label>
+      <textarea class="field" name="bio" rows="4" maxlength="400" placeholder="Несколько слов о ваших вкусах"><%= currentUser.bio %></textarea>
+      <div style="margin-top:16px"><button class="btn">Сохранить</button>
+      <a class="btn btn-ghost" href="/u/<%= currentUser.username %>">Отмена</a></div>
+    </form>
+    <p class="muted" style="font-size:14px;margin-top:16px">Аватар берётся из вашего Telegram-профиля при регистрации.</p>
+  </div>
+</main>
+<%- include('partials/footer') %>

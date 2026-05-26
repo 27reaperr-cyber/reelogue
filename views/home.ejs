@@ -1,0 +1,45 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container">
+    <h1 style="font-size:26px;margin-bottom:4px">Лента</h1>
+    <p class="muted" style="margin-top:0">Что смотрят и оценивают люди, на которых вы подписаны</p>
+
+    <% if (feed.length === 0) { %>
+      <div class="card center" style="margin:20px 0">
+        <p>Здесь пока пусто. Подписывайтесь на людей или начните вести свой дневник.</p>
+        <a class="btn btn-ghost btn-sm" href="/popular">Смотреть популярное</a>
+      </div>
+      <% if (suggested && suggested.length) { %>
+        <h2 class="section-title">Популярно сейчас</h2>
+        <div class="grid">
+          <% suggested.forEach(function(m){ %>
+            <%- include('partials/filmcard', { card: { id: m.id, title: m.title, poster: tmdb.poster(m.poster_path), year: m.release_date ? m.release_date.slice(0,4) : null, rating: m.vote_average } }) %>
+          <% }) %>
+        </div>
+      <% } %>
+    <% } else { %>
+      <% feed.forEach(function(it){ %>
+        <div class="feed-item">
+          <a class="poster" href="/film/<%= it.filmId %>" style="width:64px">
+            <% if (it.film.posterPath) { %><img src="<%= tmdb.poster(it.film.posterPath) %>" alt=""/><% } else { %><span class="ph"><%= it.film.title %></span><% } %>
+          </a>
+          <div class="feed-text">
+            <a class="who" href="/u/<%= it.user.username %>"><%= it.user.displayName %></a>
+            <% if (it.type === 'diary') { %>
+              посмотрел(а) <a href="/film/<%= it.filmId %>"><%= it.film.title %></a>
+              <% if (it.rating) { %><span class="gold">· <%= it.rating %>/10</span><% } %>
+            <% } else if (it.type === 'rating') { %>
+              оценил(а) <a href="/film/<%= it.filmId %>"><%= it.film.title %></a>
+              <span class="gold">· <%= it.value %>/10</span>
+            <% } else { %>
+              написал(а) рецензию на <a href="/film/<%= it.filmId %>"><%= it.film.title %></a>
+              <div class="muted" style="margin-top:4px"><%= it.body.slice(0,160) %><%= it.body.length>160?'…':'' %></div>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

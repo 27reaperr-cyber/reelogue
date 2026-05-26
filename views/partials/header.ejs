@@ -1,0 +1,34 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">Reelogue<span class="dot">.</span></a>
+    <form class="search-form" action="/search" method="get">
+      <input type="text" name="q" placeholder="Поиск фильмов и людей…" value="<%= (typeof q !== 'undefined' && q) ? q : '' %>" />
+    </form>
+    <% if (currentUser) { %>
+      <a href="/u/<%= currentUser.username %>" title="Профиль">
+        <% if (currentUser.avatarUrl) { %>
+          <img class="header-avatar" src="<%= currentUser.avatarUrl %>" alt="" />
+        <% } else { %>
+          <span class="header-avatar" style="display:flex;align-items:center;justify-content:center;font-family:Georgia;color:var(--gold)"><%= currentUser.displayName.charAt(0).toUpperCase() %></span>
+        <% } %>
+      </a>
+    <% } else { %>
+      <a href="/login" class="btn btn-sm">Войти</a>
+    <% } %>
+  </div>
+  <% if (currentUser) { %>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="<%= path === '/' ? 'active' : '' %>">Лента</a>
+      <a href="/popular" class="<%= path === '/popular' ? 'active' : '' %>">Популярное</a>
+      <a href="/catalog" class="<%= path === '/catalog' ? 'active' : '' %>">Каталог</a>
+      <a href="/diary" class="<%= path === '/diary' ? 'active' : '' %>">Дневник</a>
+      <a href="/lists" class="<%= path.startsWith('/list') ? 'active' : '' %>">Списки</a>
+      <a href="/stats" class="<%= path === '/stats' ? 'active' : '' %>">Статистика</a>
+      <a href="/random">Случайный</a>
+      <a href="/u/<%= currentUser.username %>">Профиль</a>
+      <a href="/logout">Выйти</a>
+    </div>
+  </nav>
+  <% } %>
+</header>

@@ -1,0 +1,53 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container">
+    <h1 style="font-size:26px">Статистика</h1>
+
+    <div class="stats-row" style="flex-wrap:wrap;gap:30px">
+      <div class="stat"><b><%= stats.watched %></b><span>просмотров</span></div>
+      <div class="stat"><b><%= stats.hours %></b><span>часов</span></div>
+      <div class="stat"><b><%= stats.reviews %></b><span>рецензий</span></div>
+      <div class="stat"><b><%= stats.ratingsCount %></b><span>оценок</span></div>
+      <div class="stat"><b><%= stats.avgRating || '—' %></b><span>средняя оценка</span></div>
+    </div>
+
+    <% if (stats.topGenres.length) { %>
+      <h2 class="section-title">Любимые жанры</h2>
+      <% var maxG = Math.max.apply(null, stats.topGenres.map(function(g){return g.count})); %>
+      <% stats.topGenres.forEach(function(g){ %>
+        <div class="bar-row">
+          <div class="bar-label"><%= g.name %></div>
+          <div class="bar-track"><div class="bar-fill" style="width:<%= Math.round(g.count/maxG*100) %>%"></div></div>
+          <div class="bar-num"><%= g.count %></div>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (stats.topMonths.length) { %>
+      <h2 class="section-title">Самые активные месяцы</h2>
+      <% var maxM = Math.max.apply(null, stats.topMonths.map(function(m){return m.count})); %>
+      <% stats.topMonths.forEach(function(m){ %>
+        <div class="bar-row">
+          <div class="bar-label" style="width:160px"><%= m.label %></div>
+          <div class="bar-track"><div class="bar-fill" style="width:<%= Math.round(m.count/maxM*100) %>%"></div></div>
+          <div class="bar-num"><%= m.count %></div>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (stats.ratingsCount) { %>
+      <h2 class="section-title">Распределение оценок</h2>
+      <% stats.dist.forEach(function(d){ %>
+        <div class="bar-row">
+          <div class="bar-label" style="width:40px"><%= d.value %></div>
+          <div class="bar-track"><div class="bar-fill" style="width:<%= Math.round(d.count/stats.maxDist*100) %>%"></div></div>
+          <div class="bar-num"><%= d.count %></div>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (!stats.watched) { %><p class="muted">Пока недостаточно данных. Отмечайте просмотры и ставьте оценки.</p><% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

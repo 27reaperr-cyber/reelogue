@@ -1,0 +1,17 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container">
+    <h1 style="font-size:26px">Популярное на этой неделе</h1>
+    <% if (!results.length) { %><p class="muted">Не удалось загрузить. Проверьте TMDB_API_KEY в .env.</p><% } %>
+    <div class="grid">
+      <% results.forEach(function(m){ %>
+        <%- include('partials/filmcard', { card: { id: m.id, title: m.title, poster: tmdb.poster(m.poster_path), year: m.release_date?m.release_date.slice(0,4):null, rating: m.vote_average } }) %>
+      <% }) %>
+    </div>
+    <% if (results.length) { %>
+      <div class="center" style="margin-top:24px"><a class="btn btn-ghost btn-sm" href="/popular?page=<%= page+1 %>">Дальше →</a></div>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

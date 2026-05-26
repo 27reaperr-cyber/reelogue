@@ -1,0 +1,27 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<%
+  function fmt(d){ var m=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']; var x=new Date(d); return x.getDate()+' '+m[x.getMonth()]+' '+x.getFullYear(); }
+%>
+<main>
+  <div class="container">
+    <h1 style="font-size:26px">Кинодневник</h1>
+    <% if (!entries.length) { %>
+      <p class="muted">Дневник пуст. Отмечайте просмотры на странице фильма.</p>
+    <% } %>
+    <% entries.forEach(function(e){ %>
+      <div class="diary-row">
+        <div class="diary-date"><%= fmt(e.watchedAt) %><% if (e.rewatch) { %> <span class="tag">↺</span><% } %></div>
+        <a class="poster" href="/film/<%= e.filmId %>" style="width:50px">
+          <% if (e.film.posterPath) { %><img src="<%= tmdb.poster(e.film.posterPath) %>"/><% } else { %><span class="ph"><%= e.film.title %></span><% } %>
+        </a>
+        <div style="flex:1">
+          <a href="/film/<%= e.filmId %>" style="font-family:Georgia;font-size:18px"><%= e.film.title %></a>
+          <% if (e.film.year) { %> <span class="muted">(<%= e.film.year %>)</span><% } %>
+        </div>
+        <% if (e.rating) { %><div class="gold" style="font-family:Georgia"><%= e.rating %>/10</div><% } %>
+      </div>
+    <% }) %>
+  </div>
+</main>
+<%- include('partials/footer') %>

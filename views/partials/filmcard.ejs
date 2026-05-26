@@ -1,0 +1,13 @@
+<div>
+  <a class="poster" href="/film/<%= card.id %>">
+    <% if (card.poster) { %>
+      <img src="<%= card.poster %>" alt="<%= card.title %>" loading="lazy" />
+    <% } else { %>
+      <span class="ph"><%= card.title %></span>
+    <% } %>
+    <% if (card.rating) { %><span class="badge"><%= Number(card.rating).toFixed(1) %></span><% } %>
+  </a>
+  <% if (typeof showTitle === 'undefined' || showTitle) { %>
+    <div class="poster-title"><%= card.title %><% if (card.year) { %> <span class="muted">(<%= card.year %>)</span><% } %></div>
+  <% } %>
+</div>

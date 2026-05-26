@@ -1,0 +1,30 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container">
+    <h1 style="font-size:24px">Поиск<% if (q) { %>: <span class="gold"><%= q %></span><% } %></h1>
+
+    <% if (q && users.length) { %>
+      <h2 class="section-title">Люди</h2>
+      <% users.forEach(function(u){ %>
+        <a href="/u/<%= u.username %>" class="feed-item" style="text-decoration:none">
+          <% if (u.avatarUrl) { %><img class="review-ava" style="width:44px;height:44px" src="<%= u.avatarUrl %>"/><% } else { %><div class="review-ava" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--surface);color:var(--gold);font-family:Georgia"><%= u.displayName.charAt(0) %></div><% } %>
+          <div class="feed-text"><span class="gold"><%= u.displayName %></span><div class="muted">@<%= u.username %></div></div>
+        </a>
+      <% }) %>
+    <% } %>
+
+    <% if (q) { %>
+      <h2 class="section-title">Фильмы</h2>
+      <% if (!films.length) { %><p class="muted">Фильмы не найдены.</p><% } %>
+      <div class="grid">
+        <% films.forEach(function(m){ %>
+          <%- include('partials/filmcard', { card: { id: m.id, title: m.title, poster: tmdb.poster(m.poster_path), year: m.release_date?m.release_date.slice(0,4):null, rating: m.vote_average } }) %>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="muted">Введите запрос в строке поиска выше.</p>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

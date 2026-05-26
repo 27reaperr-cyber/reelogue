@@ -1,0 +1,81 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main>
+  <div class="container">
+    <div class="profile-head">
+      <% if (profile.avatarUrl) { %>
+        <img class="profile-avatar" src="<%= profile.avatarUrl %>" alt="" />
+      <% } else { %>
+        <div class="profile-avatar ph"><%= profile.displayName.charAt(0).toUpperCase() %></div>
+      <% } %>
+      <div style="flex:1">
+        <h1 class="profile-name"><%= profile.displayName %></h1>
+        <div class="profile-username">@<%= profile.username %></div>
+        <% if (profile.bio) { %><p class="profile-bio"><%= profile.bio %></p><% } %>
+        <div class="stats-row">
+          <div class="stat"><b><%= counts.watched %></b><span>фильмов</span></div>
+          <div class="stat"><b><%= counts.followers %></b><span>подписчиков</span></div>
+          <div class="stat"><b><%= counts.following %></b><span>подписок</span></div>
+        </div>
+        <div style="margin-top:14px">
+          <% if (isOwner) { %>
+            <a class="btn btn-ghost btn-sm" href="/settings">Редактировать</a>
+            <a class="btn btn-ghost btn-sm" href="/stats">Статистика</a>
+          <% } else if (currentUser) { %>
+            <form method="post" action="/u/<%= profile.username %>/follow" style="display:inline">
+              <button class="btn btn-sm <%= isFollowing ? 'btn-ghost on' : '' %>"><%= isFollowing ? 'Вы подписаны' : 'Подписаться' %></button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Любимые фильмы</h2>
+    <div class="fav-grid">
+      <% for (let i=0;i<4;i++){ var f = favorites[i]; %>
+        <% if (f) { %>
+          <%- include('partials/filmcard', { card: { id: f.filmId, title: f.film.title, poster: tmdb.poster(f.film.posterPath), year: f.film.year, rating: null }, showTitle: false }) %>
+        <% } else { %>
+          <div class="poster"><span class="ph"><%= isOwner ? 'Добавьте на странице фильма' : '—' %></span></div>
+        <% } %>
+      <% } %>
+    </div>
+
+    <% if (recentDiary.length) { %>
+      <h2 class="section-title">Недавно посмотрел<%= '' %></h2>
+      <div class="grid">
+        <% recentDiary.forEach(function(e){ %>
+          <%- include('partials/filmcard', { card: { id: e.filmId, title: e.film.title, poster: tmdb.poster(e.film.posterPath), year: e.film.year, rating: e.rating }, showTitle: false }) %>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (reviews.length) { %>
+      <h2 class="section-title">Рецензии</h2>
+      <% reviews.forEach(function(r){ %>
+        <div class="card" style="margin-bottom:10px">
+          <a href="/film/<%= r.filmId %>" style="font-family:Georgia;font-size:18px"><%= r.film.title %></a>
+          <% if (r.rating) { %><span class="gold"> · <%= r.rating %>/10</span><% } %>
+          <p style="margin:8px 0 0;white-space:pre-wrap"><%= r.body.slice(0,280) %><%= r.body.length>280?'…':'' %></p>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (lists.length) { %>
+      <h2 class="section-title">Списки</h2>
+      <% lists.forEach(function(l){ %>
+        <a href="/list/<%= l.id %>" class="card" style="display:block;margin-bottom:10px">
+          <div style="font-family:Georgia;font-size:18px"><%= l.name %> <% if(!l.isPublic){ %><span class="tag">приватный</span><% } %></div>
+          <div class="grid" style="margin-top:10px;grid-template-columns:repeat(5,1fr)">
+            <% l.items.forEach(function(it){ %>
+              <div class="poster" style="aspect-ratio:2/3">
+                <% if (it.film.posterPath) { %><img src="<%= tmdb.poster(it.film.posterPath) %>"/><% } else { %><span class="ph"><%= it.film.title %></span><% } %>
+              </div>
+            <% }) %>
+          </div>
+        </a>
+      <% }) %>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>
